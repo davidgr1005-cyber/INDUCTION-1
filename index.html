@@ -27,15 +27,20 @@
     </div>
 
     <div id="sec-video" class="hidden">
-    <h2>Capacitación de Seguridad</h2>
-    <div style="position: relative; padding-bottom: 56.25%; height: 0;">
-        <video controls style="width:100%; border-radius:8px;">
-    <source src="nombre_de_tu_video.mp4" type="video/mp4">
-    Tu navegador no soporta video.
-</video>
+        <h2>Capacitación de Seguridad</h2>
+        <p>Vea el video completo para habilitar el examen.</p>
+        
+        <div style="max-width: 100%; margin: auto;">
+            <video id="video-instruccion" controls style="width: 100%; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                <source src="https://docs.google.com/uc?export=download&id=1KuGiEhOcBw4Z3iW2PqhL7A4PvKOIDUZW type="video/mp4">
+                Tu navegador no soporta la reproducción de video.
+            </video>
+        </div>
+        
+        <br>
+        <button class="btn" onclick="mostrarExamen()">Comenzar Evaluación</button>
     </div>
-    <button class="btn" onclick="mostrarExamen()">Comenzar Evaluación</button>
-</div>
+    
     <div id="sec-examen" class="hidden">
         <h2 id="titulo-examen">Evaluación</h2>
         <div id="contenedor-preguntas"></div>
