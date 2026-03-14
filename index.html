@@ -27,16 +27,14 @@
     </div>
 
     <div id="sec-video" class="hidden">
-        <h2>Capacitación de Seguridad</h2>
-        <p>Vea el video completo para habilitar el examen.</p>
-        <video id="video-instruccion" controls>
-            <source src="Inducción 2025 16.06.25.mp4" type="video/mp4">
-            Tu navegador no soporta video.
-        </video>
-        <br>
-        <button class="btn" onclick="mostrarExamen()">Comenzar Evaluación</button>
+    <h2>Capacitación de Seguridad</h2>
+    <div style="position: relative; padding-bottom: 56.25%; height: 0;">
+        <iframe src="https://www.youtube.com/embed/https://youtu.be/-_CcR93L5Cc" 
+                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" 
+                frameborder="0" allowfullscreen></iframe>
     </div>
-
+    <button class="btn" onclick="mostrarExamen()">Comenzar Evaluación</button>
+</div>
     <div id="sec-examen" class="hidden">
         <h2 id="titulo-examen">Evaluación</h2>
         <div id="contenedor-preguntas"></div>
