@@ -7,6 +7,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; text-align: center; }
+        <div style="background: white; padding: 10px; display: flex; justify-content: space-around; align-items: center; border-bottom: 3px solid #0078d4; margin-bottom: 20px;">
+        <img src="https://www.gob.mx/cms/uploads/action_program/main_image/26943/post_AICM.png" alt="Logo AICM" style="height: 60px;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Escudo_de_la_Armada_de_M%C3%A9xico.svg/1200px-Escudo_de_la_Armada_de_M%C3%A9xico.svg.png" alt="Logo SEMAR" style="height: 60px;">
+        </div>
         .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         .hidden { display: none; }
         .btn { background: #0078d4; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 20px; }
@@ -23,9 +27,11 @@
         <h2>Control de Acceso</h2>
         <input type="text" id="nombre-usuario" placeholder="Nombre completo (Apellidos primero)"><br>
         <input type="password" id="clave" placeholder="Clave de acceso"><br>
-        <button class="btn" onclick="validarAcceso()">Ingresar</button>
+        <button id="btn-login" class="btn" onclick="validarAcceso()">Ingresar</button>
     </div>
 
+
+    
     <div id="sec-video" class="hidden">
     <h2>Capacitación de Seguridad</h2>
     <p>Vea el video completo para habilitar el examen.</p>
@@ -36,12 +42,12 @@
        crossorigin="anonymous" 
        playsinline 
        style="width: 100%; border-radius: 8px;"
-       src="https://storageaicm.blob.core.windows.net/capacitacion/opt%20Inducci%C3%B3n%202025%2016.06.25.mp4?sp=r&st=2026-03-17T23:22:31Z&se=2026-03-18T07:37:31Z&spr=https&sv=2024-11-04&sr=b&sig=a%2B9nri0Bw3PnfLLkpFReFnVGUFS71brwM3MOfKVAK%2FQ%3D">
+       src="https://storageaicm.blob.core.windows.net/capacitacion/opt%20Inducci%C3%B3n%202025%2016.06.25.mp4?sp=r&st=2026-03-17T23:43:47Z&se=2028-08-01T07:58:47Z&spr=https&sv=2024-11-04&sr=b&sig=C9XZNrrvbgcaog5lhuJmArrdH7uEiroQMTeOxfOrCGE%3D">
     Tu navegador no soporta la reproducción de video.
 </video>
     
     <br>
-    <button class="btn" onclick="mostrarExamen()">Comenzar Evaluación</button>
+    <button id="btn-evaluacion" class="btn" onclick="mostrarExamen()">Comenzar Evaluación</button>
 </div>
     
     <div id="sec-examen" class="hidden">
@@ -52,6 +58,27 @@
 </div>
 
 <script>
+    // --- COPIAR DESDE AQUÍ ---
+
+// 1. Referencia al video y al botón
+const video = document.getElementById('video-instruccion');
+const btnComenzar = document.getElementById('btn-evaluacion');
+
+// 2. Escondemos el botón apenas cargue la sección del video
+// (Esto asegura que no puedan darle clic antes de tiempo)
+if (btnComenzar) {
+    btnComenzar.style.display = 'none'; 
+}
+
+// 3. El "Candado"
+if (video && btnComenzar) {
+    video.onended = function() {
+        btnComenzar.style.display = 'block';
+        alert("Capacitación finalizada. Ya puedes iniciar tu evaluación.");
+    };
+}
+
+// --- HASTA AQUÍ ---
     const bancoPreguntas = [
         { q: "En este documento se establecen Procedimientos de Prevención de Actos de Interferencia Ilícita y Procedimientos de Medidas de Seguridad Reforzadas:", a: ["a) Plan de Seguridad del Aeropuerto", "b) Manual de Seguridad Industrial", "c) Reglamento de Operaciones del AICM", "d) Manual de Seguridad Operacional"], correct: 0 },
         { q: "Es un acto de interferencia ilícita:", a: ["a) Que una aeronave aterrizando por viento cruzado, se vaya al aire.", "b) Comunicación de información falsa que compromete a la seguridad de una aeronave...", "c) Fuga de gas en un local comercial del Fast Food.", "d) Ninguna de las anteriores."], correct: 1 },
@@ -73,16 +100,19 @@
     let preguntasAleatorias = [];
     let nombreCandidato = "";
 
-    function validarAcceso() {
-        const pass = document.getElementById('clave').value;
-        nombreCandidato = document.getElementById('nombre-usuario').value;
-        if (pass === "1455" && nombreCandidato.length > 5) {
-            document.getElementById('sec-login').classList.add('hidden');
-            document.getElementById('sec-video').classList.remove('hidden');
-        } else {
-            alert("Clave incorrecta o falta nombre completo.");
-        }
+   function validarAcceso() {
+    const pass = document.getElementById('clave').value;
+    nombreCandidato = document.getElementById('nombre-usuario').value;
+    if (pass === "1455" && nombreCandidato.length > 5) {
+        document.getElementById('sec-login').classList.add('hidden');
+        document.getElementById('sec-video').classList.remove('hidden');
+        
+        // REFUERZO: Aseguramos que el botón esté oculto al entrar al video
+        btnComenzar.style.display = 'none'; 
+    } else {
+        alert("Clave incorrecta o falta nombre completo.");
     }
+}
 
     function mostrarExamen() {
         document.getElementById('sec-video').classList.add('hidden');
