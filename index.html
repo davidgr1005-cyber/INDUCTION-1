@@ -7,11 +7,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; text-align: center; }
-        <div style="background: white; padding: 10px; display: flex; justify-content: space-around; align-items: center; border-bottom: 3px solid #0078d4; margin-bottom: 20px;">
-        <img src="https://www.gob.mx/cms/uploads/action_program/main_image/26943/post_AICM.png" alt="Logo AICM" style="height: 60px;">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Escudo_de_la_Armada_de_M%C3%A9xico.svg/1200px-Escudo_de_la_Armada_de_M%C3%A9xico.svg.png" alt="Logo SEMAR" style="height: 60px;">
-        </div>
         .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .header-logos { background: white; padding: 10px; display: flex; justify-content: space-around; align-items: center; border-bottom: 3px solid #0078d4; margin-bottom: 20px; border-radius: 12px; }
         .hidden { display: none; }
         .btn { background: #0078d4; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 20px; }
         .btn:hover { background: #005a9e; }
@@ -22,6 +19,11 @@
 </head>
 <body>
 
+<div class="header-logos container">
+    <img src="https://www.gob.mx/cms/uploads/action_program/main_image/26943/post_AICM.png" alt="Logo AICM" style="height: 60px;">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Escudo_de_la_Armada_de_M%C3%A9xico.svg/1200px-Escudo_de_la_Armada_de_M%C3%A9xico.svg.png" alt="Logo SEMAR" style="height: 60px;">
+</div>
+
 <div class="container">
     <div id="sec-login">
         <h2>Control de Acceso</h2>
@@ -30,89 +32,76 @@
         <button id="btn-login" class="btn" onclick="validarAcceso()">Ingresar</button>
     </div>
 
-
-    
     <div id="sec-video" class="hidden">
-    <h2>Capacitación de Seguridad</h2>
-    <p>Vea el video completo para habilitar el examen.</p>
-    
-   <video id="video-instruccion" 
-       controls 
-       preload="metadata" 
-       crossorigin="anonymous" 
-       playsinline 
-       style="width: 100%; border-radius: 8px;"
-       src="https://storageaicm.blob.core.windows.net/capacitacion/opt%20Inducci%C3%B3n%202025%2016.06.25.mp4?sp=r&st=2026-03-17T23:43:47Z&se=2028-08-01T07:58:47Z&spr=https&sv=2024-11-04&sr=b&sig=C9XZNrrvbgcaog5lhuJmArrdH7uEiroQMTeOxfOrCGE%3D">
-    Tu navegador no soporta la reproducción de video.
-</video>
-    
-    <br>
-    <button id="btn-evaluacion" class="btn" onclick="mostrarExamen()">Comenzar Evaluación</button>
-</div>
-    
+        <h2>Capacitación de Seguridad</h2>
+        <p>Vea el video completo para habilitar el examen.</p>
+        <video id="video-instruccion" controls preload="metadata" crossorigin="anonymous" playsinline 
+               src="https://storageaicm.blob.core.windows.net/capacitacion/opt%20Inducci%C3%B3n%202025%2016.06.25.mp4?sp=r&st=2026-03-17T23:43:47Z&se=2028-08-01T07:58:47Z&spr=https&sv=2024-11-04&sr=b&sig=C9XZNrrvbgcaog5lhuJmArrdH7uEiroQMTeOxfOrCGE%3D">
+            Tu navegador no soporta la reproducción de video.
+        </video>
+        <br>
+        <button id="btn-evaluacion" class="btn" onclick="mostrarExamen()">Comenzar Evaluación</button>
+    </div>
+
     <div id="sec-examen" class="hidden">
         <h2 id="titulo-examen">Evaluación</h2>
         <div id="contenedor-preguntas"></div>
         <button class="btn" onclick="calificar()">Enviar Resultados</button>
     </div>
+
+    <div id="sec-final" class="hidden">
+        <h2 style="color: #28a745;">¡Evaluación Concluida con Éxito!</h2>
+        <p id="mensaje-resultado" style="font-size: 18px; font-weight: bold;"></p>
+        <p>Tu constancia se ha generado y descargado automáticamente.</p>
+        <p style="color: #666; font-size: 14px;">(Si no ves el archivo, revisa tu carpeta de Descargas)</p>
+        <button class="btn" style="background: #28a745;" onclick="location.reload()">Finalizar y Salir</button>
+    </div>
 </div>
 
 <script>
-    // --- COPIAR DESDE AQUÍ ---
+    const video = document.getElementById('video-instruccion');
+    const btnComenzar = document.getElementById('btn-evaluacion');
+    let nombreCandidato = "";
+    let preguntasAleatorias = [];
 
-// 1. Referencia al video y al botón
-const video = document.getElementById('video-instruccion');
-const btnComenzar = document.getElementById('btn-evaluacion');
+    if (btnComenzar) btnComenzar.style.display = 'none';
 
-// 2. Escondemos el botón apenas cargue la sección del video
-// (Esto asegura que no puedan darle clic antes de tiempo)
-if (btnComenzar) {
-    btnComenzar.style.display = 'none'; 
-}
+    if (video && btnComenzar) {
+        video.onended = function() {
+            btnComenzar.style.display = 'block';
+            alert("Capacitación finalizada. Ya puedes iniciar tu evaluación.");
+        };
+    }
 
-// 3. El "Candado"
-if (video && btnComenzar) {
-    video.onended = function() {
-        btnComenzar.style.display = 'block';
-        alert("Capacitación finalizada. Ya puedes iniciar tu evaluación.");
-    };
-}
-
-// --- HASTA AQUÍ ---
     const bancoPreguntas = [
-        { q: "En este documento se establecen Procedimientos de Prevención de Actos de Interferencia Ilícita y Procedimientos de Medidas de Seguridad Reforzadas:", a: ["a) Plan de Seguridad del Aeropuerto", "b) Manual de Seguridad Industrial", "c) Reglamento de Operaciones del AICM", "d) Manual de Seguridad Operacional"], correct: 0 },
-        { q: "Es un acto de interferencia ilícita:", a: ["a) Que una aeronave aterrizando por viento cruzado, se vaya al aire.", "b) Comunicación de información falsa que compromete a la seguridad de una aeronave...", "c) Fuga de gas en un local comercial del Fast Food.", "d) Ninguna de las anteriores."], correct: 1 },
-        { q: "El ingreso de personas por los controles de acceso del AICM, se permite verificando:", a: ["a) Credenciales de cada empresa", "b) El uniforme", "c) Credenciales con código de barras", "d) Tarjetas de Identificación Aeroportuaria"], correct: 3 },
+        { q: "En este documento se establecen Procedimientos de Prevención de Actos de Interferencia Ilícita...", a: ["a) Plan de Seguridad del Aeropuerto", "b) Manual de Seguridad Industrial", "c) Reglamento de Operaciones del AICM", "d) Manual de Seguridad Operacional"], correct: 0 },
+        { q: "Es un acto de interferencia ilícita:", a: ["a) Que una aeronave aterrizando por viento cruzado...", "b) Comunicación de información falsa...", "c) Fuga de gas...", "d) Ninguna."], correct: 1 },
+        { q: "El ingreso de personas por los controles de acceso del AICM, se permite verificando:", a: ["a) Credenciales", "b) Uniforme", "c) Código de barras", "d) Tarjetas de Identificación Aeroportuaria"], correct: 3 },
         { q: "La definición: 'Es un Aeródromo civil de servicio público declarado internacional...', corresponde a:", a: ["a) Pista paralela", "b) Aeródromo Privado", "c) Aeropuerto Regional", "d) Aeropuerto Internacional"], correct: 3 },
-        { q: "Los siguientes conceptos son zonas de seguridad en el AICM:", a: ["a) Zona sin Restricciones/Pública y Zona Estéril", "b) Zona de Protección Civil y Zona de Comidas", "c) Zona de Pistas y de Calles de Rodajes", "d) Zona de Combustibles y Zona de Estacionamientos"], correct: 0 },
-        { q: "La definición de control de seguridad es la siguiente:", a: ["a) Tarjetas de Identificación Aeroportuaria", "b) Control en pasillo ambulatorio separado por puertas de cristal", "c) Esa definición no se encuentra en la presentación", "d) Medios para evitar se introduzcan armas, explosivos u objetos..."], correct: 3 },
-        { q: "Son derechos y obligaciones del portador de una TIA:", a: ["a) Pedir prestada una en caso de olvido", "b) Guiar a compañeros sin TIA", "c) Usar accesos permitidos, no transferir TIA y reportar amenazas/riesgos", "d) Respuestas a), b) y c) son incorrectas"], correct: 2 },
-        { q: "La zona sin restricciones/pública de un aeropuerto se define como:", a: ["a) Área frente a la terminal donde descienden los pasajeros", "b) Zona del aeropuerto a la que tiene acceso el público o el acceso no está restringido", "c) La parte de la pista en la que aterrizan las aeronaves", "d) La parte de la Plataforma en donde se estacionan las aeronaves"], correct: 1 },
-        { q: "Los elementos en el control de un PIP son: Indicaciones de uso Obligatorio, Estrobo de lectora de TIA, Lectora de TIA e Indicaciones de artículos prohibidos.", a: ["a) Verdadero", "b) Falso"], correct: 0 },
-        { q: "La Alerta Uno en el Plan de Contingencia es cuando se presenta la posibilidad de que ocurra una contingencia, la cual puede ser superada sin daños o lesiones.", a: ["a) Verdadero", "b) Falso"], correct: 0 },
-        { q: "El área restringida del aeropuerto, es la zona media entre el puesto de inspección de personas y la aeronave.", a: ["a) Verdadero", "b) Falso"], correct: 1 },
+        { q: "Los siguientes conceptos son zonas de seguridad en el AICM:", a: ["a) Zona sin Restricciones/Pública y Zona Estéril", "b) Zona de Protección Civil", "c) Pistas", "d) Combustibles"], correct: 0 },
+        { q: "La definición de control de seguridad es la siguiente:", a: ["a) TIA", "b) Pasillo ambulatorio", "c) No está en la presentación", "d) Medios para evitar armas, explosivos..."], correct: 3 },
+        { q: "Son derechos y obligaciones del portador de una TIA:", a: ["a) Pedir prestada", "b) Guiar compañeros", "c) Usar accesos permitidos, no transferir TIA", "d) Incorrectas"], correct: 2 },
+        { q: "La zona sin restricciones/pública de un aeropuerto se define como:", a: ["a) Área frente terminal", "b) Zona con acceso al público", "c) Parte de la pista", "d) Plataforma"], correct: 1 },
+        { q: "Los elementos en el control de un PIP son: Indicaciones, Estrobo, Lectora TIA e Indicaciones artículos prohibidos.", a: ["a) Verdadero", "b) Falso"], correct: 0 },
+        { q: "La Alerta Uno en el Plan de Contingencia es cuando existe posibilidad de contingencia sin daños.", a: ["a) Verdadero", "b) Falso"], correct: 0 },
+        { q: "El área restringida del aeropuerto, es la zona media entre el puesto de inspección y la aeronave.", a: ["a) Verdadero", "b) Falso"], correct: 1 },
         { q: "Los tipos de TIA en el AICM son Permanente, Temporal y de Visitante.", a: ["a) Verdadero", "b) Falso"], correct: 0 },
-        { q: "Cuando la TIA de un usuario sea rechazada en cualquier lectora de un PIP, debe pedir que se presente el supervisor y llamen a un representante de la SEMAR.", a: ["a) Verdadero", "b) Falso"], correct: 1 },
-        { q: "Dentro de los procedimientos de inspección, nunca debo dejar que hagan revisiones manuales a mi persona y pertenencias.", a: ["a) Verdadero", "b) Falso"], correct: 1 },
-        { q: "El propósito y objetivo de la seguridad AVSEC es tratar de buscar estupefacientes, sustancias alucinógenas y dinero ilícito.", a: ["a) Verdadero", "b) Falso"], correct: 1 }
+        { q: "Si la TIA es rechazada, debe pedir que se presente el supervisor y llamen a la SEMAR.", a: ["a) Verdadero", "b) Falso"], correct: 1 },
+        { q: "Nunca debo dejar que hagan revisiones manuales a mi persona.", a: ["a) Verdadero", "b) Falso"], correct: 1 },
+        { q: "El propósito de la seguridad AVSEC es buscar estupefacientes y dinero ilícito.", a: ["a) Verdadero", "b) Falso"], correct: 1 }
     ];
 
-    let preguntasAleatorias = [];
-    let nombreCandidato = "";
-
-   function validarAcceso() {
-    const pass = document.getElementById('clave').value;
-    nombreCandidato = document.getElementById('nombre-usuario').value;
-    if (pass === "1455" && nombreCandidato.length > 5) {
-        document.getElementById('sec-login').classList.add('hidden');
-        document.getElementById('sec-video').classList.remove('hidden');
-        
-        // REFUERZO: Aseguramos que el botón esté oculto al entrar al video
-        btnComenzar.style.display = 'none'; 
-    } else {
-        alert("Clave incorrecta o falta nombre completo.");
+    function validarAcceso() {
+        const pass = document.getElementById('clave').value;
+        nombreCandidato = document.getElementById('nombre-usuario').value;
+        if (pass === "1455" && nombreCandidato.length > 5) {
+            document.getElementById('sec-login').classList.add('hidden');
+            document.getElementById('sec-video').classList.remove('hidden');
+            btnComenzar.style.display = 'none'; 
+        } else {
+            alert("Clave incorrecta o falta nombre completo.");
+        }
     }
-}
 
     function mostrarExamen() {
         document.getElementById('sec-video').classList.add('hidden');
@@ -145,28 +134,25 @@ if (video && btnComenzar) {
         });
 
         if (aciertos >= 12) {
-            alert(`¡Aprobado! Puntaje: ${aciertos}/15. Generando constancia...`);
+            document.getElementById('sec-examen').classList.add('hidden');
+            const secFinal = document.getElementById('sec-final');
+            secFinal.classList.remove('hidden');
+            document.getElementById('mensaje-resultado').innerText = `${nombreCandidato}, aprobaste con ${aciertos}/15.`;
             generarPDF(aciertos);
             enviarABaseDatos(aciertos, registroDetallado);
         } else {
-            alert(`Calificación insuficiente (${aciertos}/15). Enviando reporte y reiniciando video...`);
+            alert(`Puntaje insuficiente (${aciertos}/15). Regresa al video.`);
             enviarABaseDatos(aciertos, registroDetallado);
             document.getElementById('sec-examen').classList.add('hidden');
             document.getElementById('sec-video').classList.remove('hidden');
+            btnComenzar.style.display = 'none';
         }
     }
 
     function enviarABaseDatos(puntos, detalle) {
-        // CORRECCIÓN: URL ENTRE COMILLAS
         const urlGAS = "https://script.google.com/macros/s/AKfycbwe4w56RqOi1NIORsAlq1pzpn-Nf1vmJzISZfqjCwkeFSul4EWjEUfWBl4-CPjwwTsX/exec"; 
         const datos = { nombre: nombreCandidato, aciertos: puntos, empresa: "AICM - Seguridad", detalle: detalle };
-
-        fetch(urlGAS, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(datos)
-        });
+        fetch(urlGAS, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(datos) });
     }
 
     function generarPDF(puntos) {
