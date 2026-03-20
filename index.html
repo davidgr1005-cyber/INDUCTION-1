@@ -136,20 +136,28 @@ function validarAcceso() {
         });
     }
 
-  function calificar() {
+function calificar() {
     let aciertos = 0;
-    let respuestasParaBaseDatos = []; // Array para las 15 columnas
+    // Creamos un array vacío de 15 posiciones fijas
+    let respuestasOrdenadas = new Array(bancoPreguntas.length).fill("SIN RESPUESTA");
 
+    // Recorremos las preguntas aleatorias que están en pantalla
     preguntasAleatorias.forEach((p, i) => {
         const r = document.querySelector(`input[name="p${i}"]:checked`);
-        // Guardamos solo el texto de la opción elegida o "N/A"
-        const respuestaTexto = r ? p.a[r.value] : "SIN RESPUESTA";
-        const esCorrecta = r && parseInt(r.value) === p.correct;
         
-        if (esCorrecta) aciertos++;
-
-        // Metemos la respuesta al arreglo
-        respuestasParaBaseDatos.push(respuestaTexto);
+        // Buscamos cuál es el índice real de esta pregunta en el banco original
+        // (Esto es lo que asegura que la P1 vaya a la Columna 1)
+        const indiceOriginal = bancoPreguntas.indexOf(p);
+        
+        if (r) {
+            const respuestaTexto = p.a[r.value];
+            const esCorrecta = parseInt(r.value) === p.correct;
+            
+            if (esCorrecta) aciertos++;
+            
+            // Guardamos la respuesta en su "cajón" correspondiente por ID
+            respuestasOrdenadas[indiceOriginal] = respuestaTexto;
+        }
     });
 
     if (aciertos >= 12) {
@@ -159,10 +167,10 @@ function validarAcceso() {
         document.getElementById('mensaje-resultado').innerText = `${nombreCandidato}, aprobaste con ${aciertos}/15.`;
         
         generarPDF(aciertos);
-        enviarABaseDatos(aciertos, respuestasParaBaseDatos); // Enviamos el array
+        enviarABaseDatos(aciertos, respuestasOrdenadas); // Enviamos el array ya ordenado
     } else {
-        alert(`Puntaje insuficiente (${aciertos}/15).`);
-        enviarABaseDatos(aciertos, respuestasParaBaseDatos);
+        alert(`Puntaje insuficiente (${aciertos}/15). Regresa al video.`);
+        enviarABaseDatos(aciertos, respuestasOrdenadas);
         document.getElementById('sec-examen').classList.add('hidden');
         document.getElementById('sec-video').classList.remove('hidden');
         btnComenzar.style.display = 'none';
