@@ -26,7 +26,8 @@
 <div class="container">
     <div id="sec-login">
         <h2>Control de Acceso</h2>
-        <input type="text" id="nombre-usuario" placeholder="Nombre completo (Apellidos primero)"><br>
+        <input type="text" id="nombre-usuario" placeholder="Nombre completo (Apellidos primero)" onimput="this.value.toUpperCase()"><br>
+        <input type="text" id="dependencia" placeholder="Dependencia / Empresa (Ej. SEMAR, AICM, INM)" onimput="this.value.toUpperCase()"><br>        
         <input type="password" id="clave" placeholder="Clave de acceso"><br>
         <button id="btn-login" class="btn" onclick="validarAcceso()">Ingresar</button>
     </div>
@@ -92,24 +93,28 @@
         { q: "El propósito de la seguridad AVSEC es buscar estupefacientes y dinero ilícito.", a: ["a) Verdadero", "b) Falso"], correct: 1 }
     ];
 
-    function validarAcceso() {
-        const pass = document.getElementById('clave').value;
-        nombreCandidato = document.getElementById('nombre-usuario').value.trim();
+ let dependenciaUsuario = ""; // Variable global para guardar la dependencia
 
-        // Candado: Revisar si ya aprobó en este equipo
-        if (localStorage.getItem("aprobado_" + nombreCandidato)) {
-            alert("El sistema registra que ya has acreditado esta evaluación anteriormente.");
-            return;
-        }
+function validarAcceso() {
+    const pass = document.getElementById('clave').value;
+    nombreCandidato = document.getElementById('nombre-usuario').value.trim().toUpperCase();
+    dependenciaUsuario = document.getElementById('dependencia').value.trim().toUpperCase();
 
-        if (pass === "1455" && nombreCandidato.length > 5) {
-            document.getElementById('sec-login').classList.add('hidden');
-            document.getElementById('sec-video').classList.remove('hidden');
-            btnComenzar.style.display = 'none'; 
-        } else {
-            alert("Clave incorrecta o falta nombre completo.");
-        }
+    // Revisar si ya aprobó
+    if (localStorage.getItem("aprobado_" + nombreCandidato)) {
+        alert("El sistema registra que " + nombreCandidato + " ya ha acreditado esta evaluación.");
+        return;
     }
+
+    // Validación de campos llenos
+    if (pass === "1455" && nombreCandidato.length > 5 && dependenciaUsuario.length > 2) {
+        document.getElementById('sec-login').classList.add('hidden');
+        document.getElementById('sec-video').classList.remove('hidden');
+        btnComenzar.style.display = 'none'; 
+    } else {
+        alert("Por favor, ingresa tu Nombre Completo, Dependencia y Clave correcta.");
+    }
+}
 
     function mostrarExamen() {
         document.getElementById('sec-video').classList.add('hidden');
@@ -131,40 +136,55 @@
         });
     }
 
-    function calificar() {
-        let aciertos = 0;
-        let registroDetallado = "";
-        preguntasAleatorias.forEach((p, i) => {
-            const r = document.querySelector(`input[name="p${i}"]:checked`);
-            const esCorrecta = r && parseInt(r.value) === p.correct;
-            if (esCorrecta) aciertos++;
-            registroDetallado += `P: ${p.q} | Correcta: ${esCorrecta ? 'SI' : 'NO'}; \n`;
-        });
+  function calificar() {
+    let aciertos = 0;
+    let respuestasParaBaseDatos = []; // Array para las 15 columnas
 
-        if (aciertos >= 12) {
-            // Guardar marca de aprobado
-            localStorage.setItem("aprobado_" + nombreCandidato, "true");
-            
-            document.getElementById('sec-examen').classList.add('hidden');
-            document.getElementById('sec-final').classList.remove('hidden');
-            document.getElementById('mensaje-resultado').innerText = `${nombreCandidato}, aprobaste con ${aciertos}/15.`;
-            
-            generarPDF(aciertos);
-            enviarABaseDatos(aciertos, registroDetallado);
-        } else {
-            alert(`Puntaje insuficiente (${aciertos}/15). Regresa al video.`);
-            enviarABaseDatos(aciertos, registroDetallado);
-            document.getElementById('sec-examen').classList.add('hidden');
-            document.getElementById('sec-video').classList.remove('hidden');
-            btnComenzar.style.display = 'none';
-        }
-    }
+    preguntasAleatorias.forEach((p, i) => {
+        const r = document.querySelector(`input[name="p${i}"]:checked`);
+        // Guardamos solo el texto de la opción elegida o "N/A"
+        const respuestaTexto = r ? p.a[r.value] : "SIN RESPUESTA";
+        const esCorrecta = r && parseInt(r.value) === p.correct;
+        
+        if (esCorrecta) aciertos++;
 
-    function enviarABaseDatos(puntos, detalle) {
-        const urlGAS = "https://script.google.com/macros/s/AKfycbwe4w56RqOi1NIORsAlq1pzpn-Nf1vmJzISZfqjCwkeFSul4EWjEUfWBl4-CPjwwTsX/exec"; 
-        const datos = { nombre: nombreCandidato, aciertos: puntos, empresa: "AICM - Seguridad", detalle: detalle };
-        fetch(urlGAS, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(datos) });
+        // Metemos la respuesta al arreglo
+        respuestasParaBaseDatos.push(respuestaTexto);
+    });
+
+    if (aciertos >= 12) {
+        localStorage.setItem("aprobado_" + nombreCandidato, "true");
+        document.getElementById('sec-examen').classList.add('hidden');
+        document.getElementById('sec-final').classList.remove('hidden');
+        document.getElementById('mensaje-resultado').innerText = `${nombreCandidato}, aprobaste con ${aciertos}/15.`;
+        
+        generarPDF(aciertos);
+        enviarABaseDatos(aciertos, respuestasParaBaseDatos); // Enviamos el array
+    } else {
+        alert(`Puntaje insuficiente (${aciertos}/15).`);
+        enviarABaseDatos(aciertos, respuestasParaBaseDatos);
+        document.getElementById('sec-examen').classList.add('hidden');
+        document.getElementById('sec-video').classList.remove('hidden');
+        btnComenzar.style.display = 'none';
     }
+}
+
+function enviarABaseDatos(puntos, respuestasArray) {
+    const urlGAS = "https://script.google.com/macros/s/AKfycbyGa1v8drWrGCDFAPFzftZVych5j-2HhbZ50W2rdn5YYEsq8NyZtJJY_g7Tuza9FGHi/exec"; 
+    const datos = { 
+        nombre: nombreCandidato, 
+        aciertos: puntos, 
+        empresa: dependenciaUsuario,
+        respuestas: respuestasArray // Enviamos la lista completa
+    };
+
+    fetch(urlGAS, { 
+        method: "POST", 
+        mode: "no-cors", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify(datos) 
+    });
+}
 
     function generarPDF(puntos) {
         const { jsPDF } = window.jspdf;
