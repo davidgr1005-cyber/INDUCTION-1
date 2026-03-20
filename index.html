@@ -6,69 +6,16 @@
     <title>Sistema de Evaluación - AICM</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-    :root {
-        --primario: #691C32; /* Guinda Institucional */
-        --secundario: #BC955C; /* Dorado */
-        --fondo: #f4f4f4;
-        --blanco: #ffffff;
-    }
-
-    body { 
-        font-family: 'Montserrat', sans-serif; 
-        background-color: var(--fondo); 
-        margin: 0; 
-        padding: 0; 
-    }
-
-    /* Encabezado con degradado profesional */
-    .header-logos {
-        background: var(--blanco);
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        padding: 15px;
-        border-bottom: 4px solid var(--secundario);
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-
-    .container { 
-        max-width: 850px; 
-        margin: 40px auto; 
-        background: var(--blanco); 
-        padding: 40px; 
-        border-radius: 15px; 
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
-    }
-
-    h2 { color: var(--primario); margin-bottom: 25px; }
-
-    /* Botones con transiciones suaves */
-    .btn { 
-        background: var(--primario); 
-        color: white; 
-        border: none; 
-        padding: 14px 28px; 
-        border-radius: 8px; 
-        font-weight: bold;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-
-    .btn:hover { 
-        background: #4a1322; 
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-    }
-
-    .pregunta { 
-        background: #f9f9f9;
-        margin-bottom: 15px; 
-        padding: 20px; 
-        border-left: 5px solid var(--secundario);
-        border-radius: 4px;
-        text-align: left;
-    }
-</style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; text-align: center; }
+        .header-logos { background: white; padding: 10px; display: flex; justify-content: space-around; align-items: center; border-bottom: 3px solid #0078d4; margin-bottom: 20px; border-radius: 12px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .hidden { display: none; }
+        .btn { background: #0078d4; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 20px; }
+        .btn:hover { background: #005a9e; }
+        input[type="text"], input[type="password"] { padding: 10px; width: 80%; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
+        .pregunta { text-align: left; margin-bottom: 20px; padding: 15px; border-bottom: 1px solid #eee; }
+        video { width: 100%; border-radius: 8px; }
+    </style>
 </head>
 <body>
 
@@ -117,8 +64,10 @@
     let nombreCandidato = "";
     let preguntasAleatorias = [];
 
+    // Ocultar botón de evaluación al inicio
     if (btnComenzar) btnComenzar.style.display = 'none';
 
+    // Lógica del candado del video
     if (video && btnComenzar) {
         video.onended = function() {
             btnComenzar.style.display = 'block';
@@ -145,25 +94,23 @@
     ];
 
     function validarAcceso() {
-    const pass = document.getElementById('clave').value;
-    nombreCandidato = document.getElementById('nombre-usuario').value.trim();
+        const pass = document.getElementById('clave').value;
+        nombreCandidato = document.getElementById('nombre-usuario').value.trim();
 
-    // NUEVO: Revisar si este usuario ya aprobó anteriormente en este equipo
-    const yaAprobo = localStorage.getItem("aprobado_" + nombreCandidato);
+        // Candado: Revisar si ya aprobó en este equipo
+        if (localStorage.getItem("aprobado_" + nombreCandidato)) {
+            alert("El sistema registra que ya has acreditado esta evaluación anteriormente.");
+            return;
+        }
 
-    if (yaAprobo) {
-        alert("Lo sentimos, " + nombreCandidato + ". El sistema registra que ya has acreditado esta evaluación. No es necesario realizarla de nuevo.");
-        return; // Detiene la ejecución y no lo deja entrar
+        if (pass === "1455" && nombreCandidato.length > 5) {
+            document.getElementById('sec-login').classList.add('hidden');
+            document.getElementById('sec-video').classList.remove('hidden');
+            btnComenzar.style.display = 'none'; 
+        } else {
+            alert("Clave incorrecta o falta nombre completo.");
+        }
     }
-
-    if (pass === "1455" && nombreCandidato.length > 5) {
-        document.getElementById('sec-login').classList.add('hidden');
-        document.getElementById('sec-video').classList.remove('hidden');
-        btnComenzar.style.display = 'none'; 
-    } else {
-        alert("Clave incorrecta o falta nombre completo.");
-    }
-}
 
     function mostrarExamen() {
         document.getElementById('sec-video').classList.add('hidden');
@@ -196,15 +143,15 @@
         });
 
         if (aciertos >= 12) {
-        // NUEVO: Guardar en la memoria que este usuario ya pasó
-        localStorage.setItem("aprobado_" + nombreCandidato, "true");
-
-        document.getElementById('sec-examen').classList.add('hidden');
-        const secFinal = document.getElementById('sec-final');
-        secFinal.classList.remove('hidden');
-        document.getElementById('mensaje-resultado').innerText = `${nombreCandidato}, aprobaste con ${aciertos}/15.`;
-        generarPDF(aciertos);
-        enviarABaseDatos(aciertos, registroDetallado);
+            // Guardar marca de aprobado
+            localStorage.setItem("aprobado_" + nombreCandidato, "true");
+            
+            document.getElementById('sec-examen').classList.add('hidden');
+            document.getElementById('sec-final').classList.remove('hidden');
+            document.getElementById('mensaje-resultado').innerText = `${nombreCandidato}, aprobaste con ${aciertos}/15.`;
+            
+            generarPDF(aciertos);
+            enviarABaseDatos(aciertos, registroDetallado);
         } else {
             alert(`Puntaje insuficiente (${aciertos}/15). Regresa al video.`);
             enviarABaseDatos(aciertos, registroDetallado);
