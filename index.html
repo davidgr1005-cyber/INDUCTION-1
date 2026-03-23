@@ -194,16 +194,51 @@ function enviarABaseDatos(puntos, respuestasArray) {
     });
 }
 
-    function generarPDF(puntos) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('l', 'mm', 'a4');
-        doc.setFontSize(22);
-        doc.text("CONSTANCIA DE CAPACITACIÓN", 148, 50, { align: "center" });
-        doc.setFontSize(16);
-        doc.text(`Se otorga la presente a: ${nombreCandidato.toUpperCase()}`, 148, 80, { align: "center" });
-        doc.text(`Por haber aprobado la Evaluación de Seguridad AICM con ${puntos} aciertos.`, 148, 100, { align: "center" });
-        doc.save(`Constancia_${nombreCandidato}.pdf`);
+    async function generarPDF(puntos) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4');
+
+    // 1. URL de tu imagen de fondo en Azure (con su token SAS)
+    const urlFondoAzure = "https://storageaicm.blob.core.windows.net/capacitacion/PLANTILLA.png?sp=r&st=2026-03-23T03:43:22Z&se=2028-03-23T11:58:22Z&spr=https&sv=2025-11-05&sr=b&sig=B0F1i%2Bu%2FjJqNmqPtmj1DfYSlErmDbD4utNfdtjqPjqk%3D";
+
+    try {
+        // 2. Cargamos la imagen desde Azure antes de generar el PDF
+        const img = new Image();
+        img.src = urlFondoAzure;
+        img.crossOrigin = "Anonymous"; // Crucial para que Azure permita la descarga
+
+        img.onload = function() {
+            // --- A. Insertar Fondo ---
+            doc.addImage(img, 'PNG', 0, 0, 297, 210);
+
+            // --- B. Insertar Datos (Coordenadas basadas en tu imagen b21fd00.jpg) ---
+            
+            // Nombre del Candidato (Cursiva elegante)
+            doc.setFont("times", "italic");
+            doc.setFontSize(30);
+            doc.text(nombreCandidato.toUpperCase(), 148.5, 110, { align: "center" });
+
+            // Calificación y Fecha
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            const calif = (puntos * 10 / 15).toFixed(1);
+            doc.text(`Obteniendo la calificación de ${calif}`, 148.5, 155, { align: "center" });
+            
+            const fecha = new Date().toLocaleDateString('es-MX', { 
+                day: 'numeric', month: 'long', year: 'numeric' 
+            });
+            doc.text(`Fecha: ${fecha}`, 148.5, 165, { align: "center" });
+            doc.text("Con una duración de 02:00 horas", 148.5, 175, { align: "center" });
+
+            // --- C. Guardar ---
+            doc.save(`Certificado_${nombreCandidato}.pdf`);
+        };
+
+    } catch (error) {
+        console.error("Error al cargar el fondo desde Azure:", error);
+        alert("Hubo un error al generar el certificado. Por favor, contacte a soporte.");
     }
+}
 </script>
 </body>
 </html>
