@@ -201,20 +201,9 @@ function calificar() {
         
         generarPDF(aciertos);
         enviarABaseDatos(aciertos, respuestasOrdenadas); // Enviamos el array ya ordenado
-    } else {
-    Swal.fire({
-        title: 'Puntaje Insuficiente',
-        text: `Obtuviste ${aciertos}/15. Es necesario reforzar los conocimientos viendo el video de nuevo.`,
-        icon: 'error',
-        confirmButtonText: 'Reintentar',
-        confirmButtonColor: '#691C32' // Guinda institucional
-    });
-    enviarABaseDatos(aciertos, respuestasOrdenadas);
-    // ... resto de tu código para ocultar examen ...
-}
-}
 
-function enviarABaseDatos(puntos, respuestasArray) {
+        // desde aqui corte inicio
+        function enviarABaseDatos(puntos, respuestasArray) {
     const urlGAS = "https://script.google.com/macros/s/AKfycbyGa1v8drWrGCDFAPFzftZVych5j-2HhbZ50W2rdn5YYEsq8NyZtJJY_g7Tuza9FGHi/exec"; 
     const datos = { 
         nombre: nombreCandidato, 
@@ -276,6 +265,21 @@ function enviarABaseDatos(puntos, respuestasArray) {
         alert("Hubo un error al generar el certificado. Por favor, contacte a soporte.");
     }
 }
+        //desde aqui corte fin
+    } else {
+    Swal.fire({
+        title: 'Puntaje Insuficiente',
+        text: `Obtuviste ${aciertos}/15. Es necesario reforzar los conocimientos viendo el video de nuevo.`,
+        icon: 'error',
+        confirmButtonText: 'Reintentar',
+        confirmButtonColor: '#691C32' // Guinda institucional
+    });
+    enviarABaseDatos(aciertos, respuestasOrdenadas);
+    // ... resto de tu código para ocultar examen ...
+}
+}
+
+
 </script>
 </body>
 </html>
