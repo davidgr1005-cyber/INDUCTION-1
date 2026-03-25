@@ -219,6 +219,8 @@ function calificar() {
         body: JSON.stringify(datos) 
     });
 }
+         enviarABaseDatos(aciertos, respuestasOrdenadas); //esta iba al final
+  
 
     async function generarPDF(puntos) {
     const { jsPDF } = window.jspdf;
@@ -273,9 +275,23 @@ function calificar() {
         icon: 'error',
         confirmButtonText: 'Reintentar',
         confirmButtonColor: '#691C32' // Guinda institucional
-    });
-    enviarABaseDatos(aciertos, respuestasOrdenadas);
-    // ... resto de tu código para ocultar examen ...
+    }).then((result) => {
+            if (result.isConfirmed) {
+                // RESETEO DE FLUJO
+                document.getElementById('sec-examen').classList.add('hidden');
+                document.getElementById('sec-video').classList.remove('hidden');
+                
+                // Bloqueamos el botón de evaluación de nuevo
+                btnComenzar.style.display = 'none';
+                video.pause();
+                video.currentTime = 0; // Reinicia el video para que lo vean de nuevo
+                
+                // Limpiamos las respuestas marcadas para el siguiente intento
+                const inputs = document.querySelectorAll('input[type="radio"]');
+                inputs.forEach(input => input.checked = false);
+            }
+        });
+   
 }
 }
 
