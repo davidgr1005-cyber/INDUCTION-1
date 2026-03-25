@@ -108,7 +108,7 @@
             document.getElementById('sec-login').classList.add('hidden');
             document.getElementById('sec-video').classList.remove('hidden');
         } else {
-            Swal.fire({ title: 'Error', text: 'Datos incorrectos.', icon: 'error' });
+            Swal.fire({ title: 'Error', text: 'Datos incorrectos o incompletos.', icon: 'error' });
         }
     }
 
@@ -151,9 +151,7 @@
             document.getElementById('sec-examen').classList.add('hidden');
             document.getElementById('sec-final').classList.remove('hidden');
             document.getElementById('mensaje-resultado').innerText = `${nombreCandidato}, aprobaste con ${aciertos}/15.`;
-            
             generarPDF(aciertos, respuestasOrdenadas);
-           
         } else {
             Swal.fire({
                 title: 'Puntaje Insuficiente',
@@ -173,28 +171,22 @@
         }
     }
 
- 
-}
-
-  async function generarPDF(puntos, respuestasParaEnviar) {
+    async function generarPDF(puntos, respuestasParaEnviar) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('l', 'mm', 'a4');
         const urlFondo = "https://storageaicm.blob.core.windows.net/capacitacion/CERTIFICADO.png?sp=r&st=2026-03-23T03:53:15Z&se=2028-03-23T12:08:15Z&spr=https&sv=2024-11-04&sr=b&sig=liwMPA%2B%2FrZ4WT4REiY3eVnOjIfPiRfJzesNNHBqYmuQ%3D";
 
         const img = new Image();
-        img.crossOrigin = "Anonymous"; // Esto DEBE ir antes del .src
+        img.crossOrigin = "Anonymous";
         img.src = urlFondo;
 
         img.onload = function() {
             try {
                 doc.addImage(img, 'PNG', 0, 0, 297, 210);
-                
-                // Nombre del Candidato
                 doc.setFont("times", "italic");
                 doc.setFontSize(30);
                 doc.text(nombreCandidato, 148.5, 110, { align: "center" });
                 
-                // Datos de Calificación
                 doc.setFont("helvetica", "bold");
                 doc.setFontSize(14);
                 const califFinal = (puntos * 10 / 15).toFixed(1);
@@ -204,39 +196,38 @@
                 doc.text(`Fecha: ${fechaHoy}`, 148.5, 165, { align: "center" });
                 doc.text("Con una duración de 02:00 horas", 148.5, 175, { align: "center" });
                 
-                // 1. Descarga local
                 doc.save(`Certificado_${nombreCandidato}.pdf`);
 
-                // 2. Preparar envío a Drive
                 const pdfBase64 = doc.output('datauristring').split(',')[1];
                 enviarABaseDatos(puntos, respuestasParaEnviar, pdfBase64);
                 
             } catch (err) {
                 console.error("Error al procesar el PDF:", err);
-                Swal.fire('Error', 'No se pudo generar el certificado, pero tus resultados se guardarán.', 'warning');
-                enviarABaseDatos(puntos, respuestasParaEnviar, ""); // Enviamos sin PDF para no perder el registro
+                enviarABaseDatos(puntos, respuestasParaEnviar, "");
             }
         };
-        function enviarABaseDatos(puntos, respuestasArray, pdfBase64) {
-    const urlGAS = "https://script.google.com/macros/s/AKfycbwwMgFHFhdnEAYf5Q6mgvku_Di-OB1A7oNqPnvjdI9nAir-xyhFRIODHUfFAz7_NZX8/exec"; 
-    const datos = { 
-        nombre: nombreCandidato, 
-        aciertos: puntos, 
-        empresa: dependenciaUsuario, 
-        respuestas: respuestasArray,
-        pdfBase64: pdfBase64 // El archivo va aquí
-    };
-
-    fetch(urlGAS, { 
-        method: "POST", 
-        mode: "no-cors", 
-        headers: { "Content-Type": "application/json" }, 
-        body: JSON.stringify(datos) 
-    });
 
         img.onerror = function() {
-            Swal.fire('Error de Conexión', 'No se pudo cargar el diseño del certificado desde Azure.', 'error');
+            Swal.fire('Error de Conexión', 'No se pudo cargar el diseño del certificado.', 'error');
         };
+    }
+
+    function enviarABaseDatos(puntos, respuestasArray, pdfBase64) {
+        const urlGAS = "https://script.google.com/macros/s/AKfycbwwMgFHFhdnEAYf5Q6mgvku_Di-OB1A7oNqPnvjdI9nAir-xyhFRIODHUfFAz7_NZX8/exec"; 
+        const datos = { 
+            nombre: nombreCandidato, 
+            aciertos: puntos, 
+            empresa: dependenciaUsuario, 
+            respuestas: respuestasArray,
+            pdfBase64: pdfBase64 
+        };
+
+        fetch(urlGAS, { 
+            method: "POST", 
+            mode: "no-cors", 
+            headers: { "Content-Type": "application/json" }, 
+            body: JSON.stringify(datos) 
+        });
     }
 </script>
 </body>
