@@ -173,22 +173,7 @@
         }
     }
 
-   function enviarABaseDatos(puntos, respuestasArray, pdfBase64) {
-    const urlGAS = "https://script.google.com/macros/s/AKfycbwwMgFHFhdnEAYf5Q6mgvku_Di-OB1A7oNqPnvjdI9nAir-xyhFRIODHUfFAz7_NZX8/exec"; 
-    const datos = { 
-        nombre: nombreCandidato, 
-        aciertos: puntos, 
-        empresa: dependenciaUsuario, 
-        respuestas: respuestasArray,
-        pdfBase64: pdfBase64 // El archivo va aquí
-    };
-
-    fetch(urlGAS, { 
-        method: "POST", 
-        mode: "no-cors", 
-        headers: { "Content-Type": "application/json" }, 
-        body: JSON.stringify(datos) 
-    });
+ 
 }
 
   async function generarPDF(puntos, respuestasParaEnviar) {
@@ -232,6 +217,22 @@
                 enviarABaseDatos(puntos, respuestasParaEnviar, ""); // Enviamos sin PDF para no perder el registro
             }
         };
+        function enviarABaseDatos(puntos, respuestasArray, pdfBase64) {
+    const urlGAS = "https://script.google.com/macros/s/AKfycbwwMgFHFhdnEAYf5Q6mgvku_Di-OB1A7oNqPnvjdI9nAir-xyhFRIODHUfFAz7_NZX8/exec"; 
+    const datos = { 
+        nombre: nombreCandidato, 
+        aciertos: puntos, 
+        empresa: dependenciaUsuario, 
+        respuestas: respuestasArray,
+        pdfBase64: pdfBase64 // El archivo va aquí
+    };
+
+    fetch(urlGAS, { 
+        method: "POST", 
+        mode: "no-cors", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify(datos) 
+    });
 
         img.onerror = function() {
             Swal.fire('Error de Conexión', 'No se pudo cargar el diseño del certificado desde Azure.', 'error');
