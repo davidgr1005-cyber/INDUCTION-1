@@ -1,13 +1,39 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Evaluación - AICM</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; text-align: center; }
-        .header-logos { background: white; padding: 10px; display: flex; justify-content: space-around; align-items: center; border-bottom: 3px solid #0078d4; margin-bottom: 20px; border-radius: 12px; }
+        .header-logos { 
+        background: white; 
+        padding: 10px; 
+        display: flex; 
+        flex-wrap: wrap; /* Permite que los logos se pongan uno abajo de otro en pantallas chicas */
+        justify-content: center; 
+        gap: 15px; /* Espacio entre logos */
+        align-items: center; 
+        border-bottom: 3px solid #0078d4; 
+        margin-bottom: 20px; 
+        border-radius: 12px; 
+    }
+
+    .header-logos img { 
+        height: auto; /* Altura automática para no deformar */
+        max-height: 50px; /* Tamaño máximo en escritorio */
+        max-width: 40%; /* Que no ocupen más del 40% del ancho cada uno */
+        object-fit: contain;
+    }
+        /* Ajuste específico para celulares */
+    @media (max-width: 600px) {
+        .header-logos img {
+            max-height: 40px; /* Un poco más chicos en móvil */
+            max-width: 80%; /* Que puedan ocupar casi todo el ancho si es necesario */
+        }
+    }
         .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         .hidden { display: none; }
         .btn { background: #0078d4; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 20px; }
@@ -71,7 +97,13 @@
     if (video && btnComenzar) {
         video.onended = function() {
             btnComenzar.style.display = 'block';
-            alert("Capacitación finalizada. Ya puedes iniciar tu evaluación.");
+           Swal.fire({
+              title: '¡Capacitación Finalizada!',
+              text: 'Ya puedes iniciar tu evaluación.',
+              icon: 'success',
+              confirmButtonText: 'Entendido',
+              confirmButtonColor: '#0078d4'
+            });
         };
     }
 
