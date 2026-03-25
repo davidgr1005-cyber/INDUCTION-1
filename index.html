@@ -1,39 +1,16 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Evaluación - AICM</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; text-align: center; }
-        .header-logos { 
-        background: white; 
-        padding: 10px; 
-        display: flex; 
-        flex-wrap: wrap; /* Permite que los logos se pongan uno abajo de otro en pantallas chicas */
-        justify-content: center; 
-        gap: 15px; /* Espacio entre logos */
-        align-items: center; 
-        border-bottom: 3px solid #0078d4; 
-        margin-bottom: 20px; 
-        border-radius: 12px; 
-    }
-
-    .header-logos img { 
-        height: auto; /* Altura automática para no deformar */
-        max-height: 50px; /* Tamaño máximo en escritorio */
-        max-width: 40%; /* Que no ocupen más del 40% del ancho cada uno */
-        object-fit: contain;
-    }
-        /* Ajuste específico para celulares */
-    @media (max-width: 600px) {
-        .header-logos img {
-            max-height: 40px; /* Un poco más chicos en móvil */
-            max-width: 80%; /* Que puedan ocupar casi todo el ancho si es necesario */
-        }
-    }
+        .header-logos { background: white; padding: 10px; display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; align-items: center; border-bottom: 3px solid #0078d4; margin-bottom: 20px; border-radius: 12px; }
+        .header-logos img { height: auto; max-height: 50px; max-width: 40%; object-fit: contain; }
+        @media (max-width: 600px) { .header-logos img { max-height: 40px; max-width: 80%; } }
         .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         .hidden { display: none; }
         .btn { background: #0078d4; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 20px; }
@@ -42,19 +19,18 @@
         .pregunta { text-align: left; margin-bottom: 20px; padding: 15px; border-bottom: 1px solid #eee; }
         video { width: 100%; border-radius: 8px; }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 
 <div class="header-logos container">
-    <img src="https://storageaicm.blob.core.windows.net/capacitacion/LOGO.png?sp=r&st=2026-03-20T05:56:31Z&se=2029-03-20T14:11:31Z&spr=https&sv=2024-11-04&sr=b&sig=0giimBnJuZyMtK8TLfkrxOpazsj7CkSXTAeQ5rMpZn8%3D" alt="Logo AICM" style="height: 60px;">
+    <img src="https://storageaicm.blob.core.windows.net/capacitacion/LOGO.png?sp=r&st=2026-03-20T05:56:31Z&se=2029-03-20T14:11:31Z&spr=https&sv=2024-11-04&sr=b&sig=0giimBnJuZyMtK8TLfkrxOpazsj7CkSXTAeQ5rMpZn8%3D" alt="Logo AICM">
 </div>
 
 <div class="container">
     <div id="sec-login">
         <h2>Control de Acceso</h2>
-        <input type="text" id="nombre-usuario" placeholder="Nombre completo (Apellidos primero)" onimput="this.value.toUpperCase()"><br>
-        <input type="text" id="dependencia" placeholder="Dependencia / Empresa (Ej. SEMAR, AICM, INM)" onimput="this.value.toUpperCase()"><br>        
+        <input type="text" id="nombre-usuario" placeholder="Nombre completo (Apellidos primero)" oninput="this.value = this.value.toUpperCase()"><br>
+        <input type="text" id="dependencia" placeholder="Dependencia / Empresa" oninput="this.value = this.value.toUpperCase()"><br>        
         <input type="password" id="clave" placeholder="Clave de acceso"><br>
         <button id="btn-login" class="btn" onclick="validarAcceso()">Ingresar</button>
     </div>
@@ -80,7 +56,6 @@
         <h2 style="color: #28a745;">¡Evaluación Concluida con Éxito!</h2>
         <p id="mensaje-resultado" style="font-size: 18px; font-weight: bold;"></p>
         <p>Tu constancia se ha generado y descargado automáticamente.</p>
-        <p style="color: #666; font-size: 14px;">(Si no ves el archivo, revisa tu carpeta de Descargas)</p>
         <button class="btn" style="background: #28a745;" onclick="location.reload()">Finalizar y Salir</button>
     </div>
 </div>
@@ -89,65 +64,53 @@
     const video = document.getElementById('video-instruccion');
     const btnComenzar = document.getElementById('btn-evaluacion');
     let nombreCandidato = "";
+    let dependenciaUsuario = "";
     let preguntasAleatorias = [];
 
-    // Ocultar botón de evaluación al inicio
     if (btnComenzar) btnComenzar.style.display = 'none';
 
-    // Lógica del candado del video
     if (video && btnComenzar) {
         video.onended = function() {
             btnComenzar.style.display = 'block';
-           Swal.fire({
-              title: '¡Capacitación Finalizada!',
-              text: 'Ya puedes iniciar tu evaluación.',
-              icon: 'success',
-              confirmButtonText: 'Entendido',
-              confirmButtonColor: '#0078d4'
-            });
+            Swal.fire({ title: '¡Capacitación Finalizada!', text: 'Ya puedes iniciar tu evaluación.', icon: 'success', confirmButtonColor: '#0078d4' });
         };
     }
 
     const bancoPreguntas = [
         { q: "En este documento se establecen Procedimientos de Prevención de Actos de Interferencia Ilícita...", a: ["a) Plan de Seguridad del Aeropuerto", "b) Manual de Seguridad Industrial", "c) Reglamento de Operaciones del AICM", "d) Manual de Seguridad Operacional"], correct: 0 },
-        { q: "Es un acto de interferencia ilícita:", a: ["a) Que una aeronave aterrizando por viento cruzado...", "b) Comunicación de información falsa...", "c) Fuga de gas...", "d) Ninguna."], correct: 1 },
-        { q: "El ingreso de personas por los controles de acceso del AICM, se permite verificando:", a: ["a) Credenciales", "b) Uniforme", "c) Código de barras", "d) Tarjetas de Identificación Aeroportuaria"], correct: 3 },
+        { q: "Es un acto de interferencia ilícita:", a: ["a) Viento cruzado...", "b) Comunicación falsa...", "c) Fuga de gas...", "d) Ninguna."], correct: 1 },
+        { q: "El ingreso de personas por los controles de acceso del AICM, se permite verificando:", a: ["a) Credenciales empresa", "b) El uniforme", "c) Código de barras", "d) Tarjetas de Identificación Aeroportuaria"], correct: 3 },
         { q: "La definición: 'Es un Aeródromo civil de servicio público declarado internacional...', corresponde a:", a: ["a) Pista paralela", "b) Aeródromo Privado", "c) Aeropuerto Regional", "d) Aeropuerto Internacional"], correct: 3 },
-        { q: "Los siguientes conceptos son zonas de seguridad en el AICM:", a: ["a) Zona sin Restricciones/Pública y Zona Estéril", "b) Zona de Protección Civil", "c) Pistas", "d) Combustibles"], correct: 0 },
-        { q: "La definición de control de seguridad es la siguiente:", a: ["a) TIA", "b) Pasillo ambulatorio", "c) No está en la presentación", "d) Medios para evitar armas, explosivos..."], correct: 3 },
-        { q: "Son derechos y obligaciones del portador de una TIA:", a: ["a) Pedir prestada", "b) Guiar compañeros", "c) Usar accesos permitidos, no transferir TIA", "d) Incorrectas"], correct: 2 },
-        { q: "La zona sin restricciones/pública de un aeropuerto se define como:", a: ["a) Área frente terminal", "b) Zona con acceso al público", "c) Parte de la pista", "d) Plataforma"], correct: 1 },
+        { q: "Los siguientes conceptos son zonas de seguridad en el AICM:", a: ["a) Zona sin Restricciones/Pública y Zona Estéril", "b) Zona Protección Civil", "c) Pistas", "d) Combustibles"], correct: 0 },
+        { q: "La definición de control de seguridad es la siguiente:", a: ["a) TIA", "b) Cristal", "c) No está", "d) Medios para evitar armas..."], correct: 3 },
+        { q: "Son derechos y obligaciones del portador de una TIA:", a: ["a) Préstamo", "b) Guiar", "c) Usar accesos, no transferir", "d) Incorrectas"], correct: 2 },
+        { q: "La zona sin restricciones/pública se define como:", a: ["a) Frente terminal", "b) Acceso público no restringido", "c) Pista", "d) Plataforma"], correct: 1 },
         { q: "Los elementos en el control de un PIP son: Indicaciones, Estrobo, Lectora TIA e Indicaciones artículos prohibidos.", a: ["a) Verdadero", "b) Falso"], correct: 0 },
-        { q: "La Alerta Uno en el Plan de Contingencia es cuando existe posibilidad de contingencia sin daños.", a: ["a) Verdadero", "b) Falso"], correct: 0 },
-        { q: "El área restringida del aeropuerto, es la zona media entre el puesto de inspección y la aeronave.", a: ["a) Verdadero", "b) Falso"], correct: 1 },
-        { q: "Los tipos de TIA en el AICM son Permanente, Temporal y de Visitante.", a: ["a) Verdadero", "b) Falso"], correct: 0 },
-        { q: "Si la TIA es rechazada, debe pedir que se presente el supervisor y llamen a la SEMAR.", a: ["a) Verdadero", "b) Falso"], correct: 1 },
-        { q: "Nunca debo dejar que hagan revisiones manuales a mi persona.", a: ["a) Verdadero", "b) Falso"], correct: 1 },
-        { q: "El propósito de la seguridad AVSEC es buscar estupefacientes y dinero ilícito.", a: ["a) Verdadero", "b) Falso"], correct: 1 }
+        { q: "La Alerta Uno es posibilidad de contingencia sin daños.", a: ["a) Verdadero", "b) Falso"], correct: 0 },
+        { q: "El área restringida es la zona media entre PIP y aeronave.", a: ["a) Verdadero", "b) Falso"], correct: 1 },
+        { q: "Los tipos de TIA son Permanente, Temporal y de Visitante.", a: ["a) Verdadero", "b) Falso"], correct: 0 },
+        { q: "Si la TIA es rechazada, debe llamar a la SEMAR.", a: ["a) Verdadero", "b) Falso"], correct: 1 },
+        { q: "Nunca debo dejar que hagan revisiones manuales.", a: ["a) Verdadero", "b) Falso"], correct: 1 },
+        { q: "El propósito de AVSEC es buscar estupefacientes.", a: ["a) Verdadero", "b) Falso"], correct: 1 }
     ];
 
- let dependenciaUsuario = ""; // Variable global para guardar la dependencia
+    function validarAcceso() {
+        const pass = document.getElementById('clave').value;
+        nombreCandidato = document.getElementById('nombre-usuario').value.trim().toUpperCase();
+        dependenciaUsuario = document.getElementById('dependencia').value.trim().toUpperCase();
 
-function validarAcceso() {
-    const pass = document.getElementById('clave').value;
-    nombreCandidato = document.getElementById('nombre-usuario').value.trim().toUpperCase();
-    dependenciaUsuario = document.getElementById('dependencia').value.trim().toUpperCase();
+        if (localStorage.getItem("aprobado_" + nombreCandidato)) {
+            Swal.fire({ title: 'Acceso Denegado', text: 'Ya has acreditado esta evaluación.', icon: 'warning' });
+            return;
+        }
 
-    // Revisar si ya aprobó
-    if (localStorage.getItem("aprobado_" + nombreCandidato)) {
-        alert("El sistema registra que " + nombreCandidato + " ya ha acreditado esta evaluación.");
-        return;
+        if (pass === "1455" && nombreCandidato.length > 5 && dependenciaUsuario.length > 2) {
+            document.getElementById('sec-login').classList.add('hidden');
+            document.getElementById('sec-video').classList.remove('hidden');
+        } else {
+            Swal.fire({ title: 'Error', text: 'Datos incorrectos.', icon: 'error' });
+        }
     }
-
-    // Validación de campos llenos
-    if (pass === "1455" && nombreCandidato.length > 5 && dependenciaUsuario.length > 2) {
-        document.getElementById('sec-login').classList.add('hidden');
-        document.getElementById('sec-video').classList.remove('hidden');
-        btnComenzar.style.display = 'none'; 
-    } else {
-        alert("Por favor, ingresa tu Nombre Completo, Dependencia y Clave correcta.");
-    }
-}
 
     function mostrarExamen() {
         document.getElementById('sec-video').classList.add('hidden');
@@ -169,47 +132,55 @@ function validarAcceso() {
         });
     }
 
-function calificar() {
-    let aciertos = 0;
-    // Creamos un array vacío de 15 posiciones fijas
-    let respuestasOrdenadas = new Array(bancoPreguntas.length).fill("SIN RESPUESTA");
+    function calificar() {
+        let aciertos = 0;
+        let respuestasOrdenadas = new Array(bancoPreguntas.length).fill("SIN RESPUESTA");
 
-    // Recorremos las preguntas aleatorias que están en pantalla
-    preguntasAleatorias.forEach((p, i) => {
-        const r = document.querySelector(`input[name="p${i}"]:checked`);
-        
-        // Buscamos cuál es el índice real de esta pregunta en el banco original
-        // (Esto es lo que asegura que la P1 vaya a la Columna 1)
-        const indiceOriginal = bancoPreguntas.indexOf(p);
-        
-        if (r) {
-            const respuestaTexto = p.a[r.value];
-            const esCorrecta = parseInt(r.value) === p.correct;
+        preguntasAleatorias.forEach((p, i) => {
+            const r = document.querySelector(`input[name="p${i}"]:checked`);
+            const indiceOriginal = bancoPreguntas.indexOf(p);
+            if (r) {
+                const respuestaTexto = p.a[r.value];
+                if (parseInt(r.value) === p.correct) aciertos++;
+                respuestasOrdenadas[indiceOriginal] = respuestaTexto;
+            }
+        });
+
+        if (aciertos >= 12) {
+            localStorage.setItem("aprobado_" + nombreCandidato, "true");
+            document.getElementById('sec-examen').classList.add('hidden');
+            document.getElementById('sec-final').classList.remove('hidden');
+            document.getElementById('mensaje-resultado').innerText = `${nombreCandidato}, aprobaste con ${aciertos}/15.`;
             
-            if (esCorrecta) aciertos++;
-            
-            // Guardamos la respuesta en su "cajón" correspondiente por ID
-            respuestasOrdenadas[indiceOriginal] = respuestaTexto;
+            generarPDF(aciertos);
+            enviarABaseDatos(aciertos, respuestasOrdenadas);
+        } else {
+            Swal.fire({
+                title: 'Puntaje Insuficiente',
+                text: `Obtuviste ${aciertos}/15. Debes ver el video de nuevo.`,
+                icon: 'error',
+                confirmButtonText: 'Regresar al Video'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('sec-examen').classList.add('hidden');
+                    document.getElementById('sec-video').classList.remove('hidden');
+                    btnComenzar.style.display = 'none';
+                    video.currentTime = 0;
+                    const inputs = document.querySelectorAll('input[type="radio"]');
+                    inputs.forEach(input => input.checked = false);
+                }
+            });
         }
-    });
+    }
 
-    if (aciertos >= 12) {
-        localStorage.setItem("aprobado_" + nombreCandidato, "true");
-        document.getElementById('sec-examen').classList.add('hidden');
-        document.getElementById('sec-final').classList.remove('hidden');
-        document.getElementById('mensaje-resultado').innerText = `${nombreCandidato}, aprobaste con ${aciertos}/15.`;
-        
-        generarPDF(aciertos);
-        enviarABaseDatos(aciertos, respuestasOrdenadas); // Enviamos el array ya ordenado
-
-        // desde aqui corte inicio
-        function enviarABaseDatos(puntos, respuestasArray) {
-    const urlGAS = "https://script.google.com/macros/s/AKfycbyGa1v8drWrGCDFAPFzftZVych5j-2HhbZ50W2rdn5YYEsq8NyZtJJY_g7Tuza9FGHi/exec"; 
+   function enviarABaseDatos(puntos, respuestasArray, pdfBase64) {
+    const urlGAS = "https://script.google.com/macros/s/AKfycbytHRExyTdN7yRjb6cjzPyuAiFa0v2TMj7pvcopzJkowoylPeeA-sQfH2NUlWOMBquf/exec"; 
     const datos = { 
         nombre: nombreCandidato, 
         aciertos: puntos, 
-        empresa: dependenciaUsuario,
-        respuestas: respuestasArray // Enviamos la lista completa
+        empresa: dependenciaUsuario, 
+        respuestas: respuestasArray,
+        pdfBase64: pdfBase64 // El archivo va aquí
     };
 
     fetch(urlGAS, { 
@@ -219,83 +190,37 @@ function calificar() {
         body: JSON.stringify(datos) 
     });
 }
-         enviarABaseDatos(aciertos, respuestasOrdenadas); //esta iba al final
-  
 
-    async function generarPDF(puntos) {
+    aasync function generarPDF(puntos) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('l', 'mm', 'a4');
+    const urlFondo = "https://storageaicm.blob.core.windows.net/capacitacion/CERTIFICADO.png?sp=r&st=2026-03-23T03:53:15Z&se=2028-03-23T12:08:15Z&spr=https&sv=2024-11-04&sr=b&sig=liwMPA%2B%2FrZ4WT4REiY3eVnOjIfPiRfJzesNNHBqYmuQ%3D";
 
-    // 1. URL de tu imagen de fondo en Azure (con su token SAS)
-    const urlFondoAzure = "https://storageaicm.blob.core.windows.net/capacitacion/CERTIFICADO.png?sp=r&st=2026-03-23T03:53:15Z&se=2028-03-23T12:08:15Z&spr=https&sv=2024-11-04&sr=b&sig=liwMPA%2B%2FrZ4WT4REiY3eVnOjIfPiRfJzesNNHBqYmuQ%3D";
+    const img = new Image();
+    img.src = urlFondo;
+    img.crossOrigin = "Anonymous";
+    img.onload = function() {
+        doc.addImage(img, 'PNG', 0, 0, 297, 210);
+        doc.setFont("times", "italic");
+        doc.setFontSize(30);
+        doc.text(nombreCandidato, 148.5, 110, { align: "center" });
+        
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.text(`Calificación: ${(puntos * 10 / 15).toFixed(1)}`, 148.5, 155, { align: "center" });
+        doc.text(`Fecha: ${new Date().toLocaleDateString('es-MX')}`, 148.5, 165, { align: "center" });
+        
+        // --- AQUÍ ESTÁ EL CAMBIO ---
+        // 1. Descarga el PDF para el guardia
+        doc.save(`Certificado_${nombreCandidato}.pdf`);
 
-    try {
-        // 2. Cargamos la imagen desde Azure antes de generar el PDF
-        const img = new Image();
-        img.src = urlFondoAzure;
-        img.crossOrigin = "Anonymous"; // Crucial para que Azure permita la descarga
-
-        img.onload = function() {
-            // --- A. Insertar Fondo ---
-            doc.addImage(img, 'PNG', 0, 0, 297, 210);
-
-            // --- B. Insertar Datos (Coordenadas basadas en tu imagen b21fd00.jpg) ---
-            
-            // Nombre del Candidato (Cursiva elegante)
-            doc.setFont("times", "italic");
-            doc.setFontSize(30);
-            doc.text(nombreCandidato.toUpperCase(), 148.5, 110, { align: "center" });
-
-            // Calificación y Fecha
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(14);
-            const calif = (puntos * 10 / 15).toFixed(1);
-            doc.text(`Obteniendo la calificación de ${calif}`, 148.5, 155, { align: "center" });
-            
-            const fecha = new Date().toLocaleDateString('es-MX', { 
-                day: 'numeric', month: 'long', year: 'numeric' 
-            });
-            doc.text(`Fecha: ${fecha}`, 148.5, 165, { align: "center" });
-            doc.text("Con una duración de 02:00 horas", 148.5, 175, { align: "center" });
-
-            // --- C. Guardar ---
-            doc.save(`Certificado_${nombreCandidato}.pdf`);
-        };
-
-    } catch (error) {
-        console.error("Error al cargar el fondo desde Azure:", error);
-        alert("Hubo un error al generar el certificado. Por favor, contacte a soporte.");
-    }
+        // 2. Convierte el PDF a Base64 para enviarlo a la base de datos
+        const pdfBase64 = doc.output('datauristring').split(',')[1];
+        
+        // 3. Enviamos todo (incluyendo el PDF)
+        enviarABaseDatos(puntos, respuestasOrdenadas, pdfBase64);
+    };
 }
-        //desde aqui corte fin
-    } else {
-    Swal.fire({
-        title: 'Puntaje Insuficiente',
-        text: `Obtuviste ${aciertos}/15. Es necesario reforzar los conocimientos viendo el video de nuevo.`,
-        icon: 'error',
-        confirmButtonText: 'Reintentar',
-        confirmButtonColor: '#691C32' // Guinda institucional
-    }).then((result) => {
-            if (result.isConfirmed) {
-                // RESETEO DE FLUJO
-                document.getElementById('sec-examen').classList.add('hidden');
-                document.getElementById('sec-video').classList.remove('hidden');
-                
-                // Bloqueamos el botón de evaluación de nuevo
-                btnComenzar.style.display = 'none';
-                video.pause();
-                video.currentTime = 0; // Reinicia el video para que lo vean de nuevo
-                
-                // Limpiamos las respuestas marcadas para el siguiente intento
-                const inputs = document.querySelectorAll('input[type="radio"]');
-                inputs.forEach(input => input.checked = false);
-            }
-        });
-   
-}
-}
-
-
 </script>
 </body>
 </html>
