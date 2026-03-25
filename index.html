@@ -42,6 +42,7 @@
         .pregunta { text-align: left; margin-bottom: 20px; padding: 15px; border-bottom: 1px solid #eee; }
         video { width: 100%; border-radius: 8px; }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 
@@ -201,12 +202,16 @@ function calificar() {
         generarPDF(aciertos);
         enviarABaseDatos(aciertos, respuestasOrdenadas); // Enviamos el array ya ordenado
     } else {
-        alert(`Puntaje insuficiente (${aciertos}/15). Regresa al video.`);
-        enviarABaseDatos(aciertos, respuestasOrdenadas);
-        document.getElementById('sec-examen').classList.add('hidden');
-        document.getElementById('sec-video').classList.remove('hidden');
-        btnComenzar.style.display = 'none';
-    }
+    Swal.fire({
+        title: 'Puntaje Insuficiente',
+        text: `Obtuviste ${aciertos}/15. Es necesario reforzar los conocimientos viendo el video de nuevo.`,
+        icon: 'error',
+        confirmButtonText: 'Reintentar',
+        confirmButtonColor: '#691C32' // Guinda institucional
+    });
+    enviarABaseDatos(aciertos, respuestasOrdenadas);
+    // ... resto de tu código para ocultar examen ...
+}
 }
 
 function enviarABaseDatos(puntos, respuestasArray) {
