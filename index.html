@@ -35,16 +35,24 @@
         <button id="btn-login" class="btn" onclick="validarAcceso()">Ingresar</button>
     </div>
 
-    <div id="sec-video" class="hidden">
-        <h2>Capacitación de Seguridad</h2>
-        <p>Vea el video completo para habilitar el examen.</p>
-        <video id="video-instruccion" controls preload="metadata" crossorigin="anonymous" playsinline 
+    //div id="sec-video" class="hidden">
+        //h2>Capacitación de Seguridad</h2>
+        //p>Vea el video completo para habilitar el examen.</p>
+        video id="video-instruccion" controls preload="metadata" crossorigin="anonymous" playsinline 
                src="https://storageaicm.blob.core.windows.net/capacitacion/opt%20Inducci%C3%B3n%202025%2016.06.25.mp4?sp=r&st=2026-03-17T23:43:47Z&se=2028-08-01T07:58:47Z&spr=https&sv=2024-11-04&sr=b&sig=C9XZNrrvbgcaog5lhuJmArrdH7uEiroQMTeOxfOrCGE%3D">
             Tu navegador no soporta la reproducción de video.
-        </video>
-        <br>
-        <button id="btn-evaluacion" class="btn" onclick="mostrarExamen()">Comenzar Evaluación</button>
-    </div>
+        /video>
+        br>
+        button id="btn-evaluacion" class="btn" onclick="mostrarExamen()">Comenzar Evaluación</button>
+    ///div>
+
+    <div id="sec-video" class="hidden">
+    <h2>Capacitación de Seguridad</h2>
+    <p>Vea el video completo para habilitar el examen.</p>
+    <div id="player"></div> 
+    <br>
+    <button id="btn-evaluacion" class="btn" onclick="mostrarExamen()" style="display:none;">Comenzar Evaluación</button>
+</div>
 
     <div id="sec-examen" class="hidden">
         <h2 id="titulo-examen">Evaluación</h2>
@@ -61,6 +69,41 @@
 </div>
 
 <script>
+    var tag = document.createElement('script');
+tag.src = "https://www.youtube.com/iframe_api";
+var firstScriptTag = document.getElementsByTagName('script')[0];
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+var player;
+function onYouTubeIframeAPIReady() {
+    player = new YT.Player('player', {
+        height: '360',
+        width: '100%',
+        videoId: '-_CcR93L5Cc', // Sustituye por el ID de tu video (ej: dQw4w9WgXcQ)
+        playerVars: {
+            'controls': 1,
+            'rel': 0,
+            'showinfo': 0,
+            'modestbranding': 1
+        },
+        events: {
+            'onStateChange': onPlayerStateChange
+        }
+    });
+}
+
+// 2. Detectar cuando el video termina
+function onPlayerStateChange(event) {
+    if (event.data == YT.PlayerState.ENDED) {
+        document.getElementById('btn-evaluacion').style.display = 'block';
+        Swal.fire({ 
+            title: '¡Capacitación Finalizada!', 
+            text: 'Ya puedes iniciar tu evaluación.', 
+            icon: 'success', 
+            confirmButtonColor: '#0078d4' 
+        });
+    }
+}
     const video = document.getElementById('video-instruccion');
     const btnComenzar = document.getElementById('btn-evaluacion');
     let nombreCandidato = "";
