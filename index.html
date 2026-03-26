@@ -260,11 +260,14 @@ function onPlayerStateChange(event) {
         };
     }
 
-    function enviarABaseDatos(puntos, respuestasArray, pdfBase64) {
-        const urlGAS = "https://script.google.com/macros/s/AKfycbwwMgFHFhdnEAYf5Q6mgvku_Di-OB1A7oNqPnvjdI9nAir-xyhFRIODHUfFAz7_NZX8/exec"; 
+  function enviarABaseDatos(puntos, respuestasArray, pdfBase64) {
+        const urlGAS = "TU_URL_DE_IMPLEMENTACION_AQUI"; 
+        const promedioFinal = (puntos * 10 / 15).toFixed(1); // Cálculo del promedio
+
         const datos = { 
             nombre: nombreCandidato, 
             aciertos: puntos, 
+            promedio: promedioFinal, // Enviamos el promedio
             empresa: dependenciaUsuario, 
             respuestas: respuestasArray,
             pdfBase64: pdfBase64 
@@ -276,20 +279,14 @@ function onPlayerStateChange(event) {
             headers: { "Content-Type": "application/json" }, 
             body: JSON.stringify(datos) 
         });
-        // Bloquear Clic Derecho
-    document.addEventListener('contextmenu', event => event.preventDefault());
 
-    // Bloquear teclas de atajo para inspeccionar
-    document.onkeydown = function(e) {
-        if (e.keyCode == 123) { // F12
-            return false;
-        }
-        if (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0) || e.keyCode == 'C'.charCodeAt(0))) {
-            return false;
-        }
-        if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) { // Ver código fuente (Ctrl+U)
-            return false;
-        }
+        // Bloqueos de seguridad (F12 y Clic derecho)
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.onkeydown = function(e) {
+            if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || (e.ctrlKey && e.keyCode == 85)) {
+                return false;
+            }
+        };
     }
     }
 </script>
